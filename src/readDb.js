@@ -1,7 +1,9 @@
 const sqlite3 = require('sqlite3').verbose();
 const fs = require('fs');
 
-const DB_NAME = 'usage_stats_legend_formatted.db';
+const path = require('path');
+const DB_NAME = path.join(__dirname, 'useage.db');
+
 const LEGEND_FIELDS = [
     'id', 'function_code', 'pages', 'documents', 'time_str',
     'estimated_str', 'datetime_str', 'size_hex_str', 'error_str',

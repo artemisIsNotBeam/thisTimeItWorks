@@ -3,8 +3,8 @@
 const { contextBridge, ipcRenderer } = require('electron')
 
 contextBridge.exposeInMainWorld('api', {
-  getPokemon : (mon) => ipcRenderer.send("getPokemon", mon),
-  onPokemonData: (callback) => ipcRenderer.on("pokemonData", (event, data) => callback(data)),
-  logIn: (username, password) => ipcRenderer.send("login", username, password),
-  logInResponse: (callback) => ipcRenderer.on("loginResponse", (event, data) => callback(data))
+  loadRequests: () => ipcRenderer.send("loadRequests"),
+  onRequestsLoaded: (callback) => ipcRenderer.on("requestsLoaded", (event, data) => callback(data)),
+  getConfig: () => { ipcRenderer.send("getConfig") },
+  onConfigLoaded: (callback) => ipcRenderer.on("configLoaded", (event, data) => callback(data)),
 })

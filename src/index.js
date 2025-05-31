@@ -1,7 +1,11 @@
 const { app, BrowserWindow, ipcMain } = require('electron');
 const { log } = require('node:console');
 const path = require('node:path');
+require('dotenv').config({ path: path.join(__dirname, '.env') });
+
+//helper
 const dbhelper = require('./readDb.js');
+
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (require('electron-squirrel-startup')) {
   app.quit();
@@ -24,36 +28,32 @@ const createWindow = () => {
   mainWindow.webContents.openDevTools();
 };
 
-var loggedIn = false;
-var username = "";
+// pretend im logged in
 
-ipcMain.on('getPokemon', async (event, mon) => {
-  if (loggedIn){
-    try {
-      const response = await fetch(`https://pokeapi.co/api/v2/pokemon/${mon.toLowerCase()}`);
-      if (!response.ok) throw new Error(`Pokémon ${mon} not found`);
 
-      const data = await response.json();
-      event.reply('pokemonData', data);
-    } catch (error) {
-      event.reply('pokemonData', "error");
-    }
-  } else {
-    event.reply('pokemonData', "not logged in");
+ipcMain.on('loadRequests', async (event) => {
+  try {
+    const requests = await dbhelper.readAndDecodeRequests();
+    event.reply('requestsLoaded', requests);
+  } catch (error) {
+    console.error('Error loading requests:', error);
+    event.reply('requestsLoaded', { error: 'Failed to load requests' });
   }
 });
 
-ipcMain.on('login', async (event, username, password) => {
-  // Simulate a login process
-  if (username === 'admin' && password === 'password') {
-    loggedIn = true;
-    username = username;
-    event.reply('loginResponse', { success: true, message: 'Login successful!', username: username });
-  } else {
-    event.reply('loginResponse', { success: false, message: 'Invalid credentials' });
-  }
+ipcMain.on('getConfig', (event) => {
+  const config = {
+    apiKey: process.env.apiKey,
+    authDomain: process.env.authDomain,
+    databaseURL: process.env.databaseURL,
+    projectId: process.env.projectId,
+    storageBucket: process.env.storageBucket,
+    messagingSenderId: process.env.messagingSenderId,
+    appId: process.env.appId,
+    measurementId: process.env.measurementId
+  };
+  event.reply('configLoaded', config);
 });
-  
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
